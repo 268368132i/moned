@@ -1,9 +1,11 @@
 import React from 'react'
 import { useState } from 'react'
+import SavedConnections from './SavedConnections'
 
 export default function ConnectBar(props) {
-  const [url, setURL] = useState('mongodb://localhost/?directConnection=true')
+  const [uri, setURI] = useState('mongodb://localhost/?directConnection=true')
   return (
+    <>
     <div
       style={{
         'display': 'flex'
@@ -14,14 +16,20 @@ export default function ConnectBar(props) {
         style={{
           'flexGrow': 1
         }}
-        onChange={(e) => setURL(e.target.value)}
-        value={url}
+        onChange={(e) => setURI(e.target.value)}
+        value={uri}
         />
         <button
-          onClick={e => props.handleConnect(url)}
+          onClick={e => props.handleConnect(uri)}
         >
           Connect
           </button>
     </div>
+    <div>
+      <SavedConnections
+        uriStateAndSetter = {[uri, setURI]}
+      />
+    </div>
+    </>
   )
 }

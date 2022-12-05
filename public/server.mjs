@@ -1,13 +1,21 @@
-const express     = require('express')
+/* const express     = require('express')
 const MongoClient = require('mongodb').MongoClient
 const Db          = require('mongodb').Db
 const ObjectId    = require('mongodb').ObjectId
 const uuid        = require('uuid')
+const SocketServer  = require('socket.io').Server */
+
+import express from 'express'
+import { MongoClient, Db, ObjectId } from 'mongodb'
+//import { uuid } from 'uuid'
+import { Server } from 'socket.io'
+
+
 let app = express()
 
 const connections = new Array()
 const actions = {
-  find: async (collection, query) => {
+  find: async (connections, query) => {
     let res
     
       let fnText = ''
@@ -18,6 +26,21 @@ const actions = {
       console.log('fnTrext=', fnText)
       const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
       fn = new AsyncFunction('collection', 'ObjectId', fnText)
+      //res = await collection.find(query).toArray()
+      res = await fn(collection, ObjectId)
+    return res
+  },
+  cmd: async (connections, query) => {
+    let res
+    
+      let fnText = ''
+      fnText = fnText.concat(
+        `\nconsole.log('Second line')`,
+        `\nreturn await ${query}`
+         )
+      console.log('fnTrext=', fnText)
+      const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
+      fn = new AsyncFunction('connections', 'ObjectId', fnText)
       //res = await collection.find(query).toArray()
       res = await fn(collection, ObjectId)
     return res
@@ -36,11 +59,6 @@ function listConnections() {
   return connNums
 }
 
-
-console.log('server is starting...')
-
-let server = app.listen(3001)
-
 app.use('/connection', express.json())
 app.use('/command', express.json())
 app.use('/action', express.json())
@@ -52,6 +70,9 @@ app.get('/', (req, res) =>{
 app.post('/connection', async (req, res) => {
   const connectURL = req.body.dbURL
   const client = new MongoClient(connectURL)
+  client.on('open', (mcl) => {
+    console.log('OPEN successeful: ')
+  })
   try {
     // Connect the client to the server
     await client.connect()
@@ -121,14 +142,23 @@ app.post('/action', async (req, response) => {
   const actionName = req.body.actionName
   const query = req.body.query
   let res
- // try {
-    const client = connections[connection]
-    const collection = await client.db(db).collection(collName)
-    res = await actions[actionName](collection, query)
-    console.log('Action result: ', res)
- /*  } catch (err) {
-    res = { error: String(err) }
-  } */
+  // try {
+  const client = connections[connection]
+  const collection = await client.db(db).collection(collName)
+  /* res = await actions[actionName](connections, query)
+  console.log('Action result: ', res)
+    } catch (err) {
+     res = { error: String(err) }
+   } */
+  let fnText = ''
+  fnText = fnText.concat(
+    `\nconsole.log('Second line')`,
+    `\n${query}`
+  )
+  console.log('fnTrext=', fnText)
+  const AsyncFunction = Object.getPrototypeOf(async function () { }).constructor
+  const fn = new AsyncFunction('connections', fnText)
+  res = await fn(connections, ObjectId)
   response.json(res)
 })
 
@@ -136,3 +166,21 @@ app.post('/command', (req, res) => {
   const c = req.body
 
 })
+
+console.log('server is starting...')
+
+let httpServer = app.listen(3001)
+const socketIo = new Server(httpServer)
+//Whenever someone connects this gets executed
+socketIo.on('connection', function (socket) {
+  console.log('A user connected');
+  socket.on('test message', (socket) => {
+    console.log('Socket event TEST arrived: ', socket)
+  })
+  //Whenever someone disconnects this piece of code executed
+  socket.on('disconnect', function () {
+    console.log('A user disconnected');
+  });
+
+})
+

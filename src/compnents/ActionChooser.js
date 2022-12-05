@@ -2,9 +2,11 @@ import React, { useEffect, useReducer } from 'react'
 import { getReducer } from '../lib/reducer'
 import { apiURL } from '../lib/vars'
 
+const reducer = getReducer()
+
 export default function ActionChooser() {
 
-  const [actionsState, actionsDispatcher] = useReducer(getReducer(), {})
+  const [actionsState, actionsDispatcher] = useReducer(reducer, {})
 
 
   //Load available actionsState

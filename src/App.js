@@ -9,29 +9,52 @@ import PathContextimport, { PathProvider, reducer } from './compnents/PathContex
 import PathBar from './compnents/PathBar'
 import ActionChooser from './compnents/ActionChooser'
 import { getReducer } from './lib/reducer'
+import CodeDisplay from './compnents/CodeDisplay'
+import ModalDialog from './compnents/ModalDialog'
+import { io } from 'socket.io-client'
 
 const resultReducer = getReducer()
 
+let socket
 function App() {
 
   const [conns, setConns] = useState([])
   const code = useState('')
   const result = useReducer(resultReducer, {result: ''})
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log('Result has changed: ', result)
   }, [result[0]])
+  useEffect(() => {
+    socket = io("ws://localhost:3000")
+
+  }, [])
+  function testWS(e) {
+    console.log('WS connection: ', socket)
+    // send a message to the server
+    socket.emit('test message', {message: 'test'})
+  }
 
   return (
+    <>
+    <button
+    onClick={testWS}
+    >
+      Test WS
+    </button>
     <div
       className="App"
       style={{
         'display': 'flex',
         'flexDirection': 'column',
         'backgroundColor': 'darkBlue',
+        'color': 'beige',
         'height': '100%'
       }}
     >
+      <ModalDialog
+        style={{}}
+      />
       <PathProvider
         value={useReducer(reducer, { path: [] })}
       >
@@ -92,7 +115,7 @@ function App() {
               result[1]({
                 action: 'FINISH',
                 element: 'result',
-                value: JSON.stringify(res)
+                value: res
               })
             } catch (err) {
               console.log(`Error sending command: ${String(err)}`)
@@ -105,7 +128,7 @@ function App() {
         >
           Execute
         </button>
-        <CodeEditor
+        <CodeDisplay
           code = { [ result[0].result, v => {
             result[1]({
               action: 'SET',
@@ -117,6 +140,7 @@ function App() {
         </div>
       </PathProvider>
     </div>
+    </>
   );
 }
 
