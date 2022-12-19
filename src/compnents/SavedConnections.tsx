@@ -1,13 +1,15 @@
 import React, { useEffect, useReducer, useState } from 'react'
 import { getReducer } from '../lib/reducer'
-import DropDown from './DropDown'
 import SavedConnection from './SavedConnection'
+import type { Action } from '../lib/reducer'
+import type { Connection } from '../lib/types'
+import { assertIsHTMLElement, assertIsInputElement } from '../lib/assertionsTargets'
 
+// Gets standard reducer + custom functions
 const reducer = getReducer({
   SAVE_AND_CLOSE: (state, action) => {
     console.log('Called SAVE_AND_CLOSE reducer', typeof state.connections)
     const newConnections = state.connections?.length > 0 && Array.from(state.connections) || []
-    //newConnections.push(action.value)
     localStorage.setItem('connections', JSON.stringify(newConnections))
     console.log('New connections: ', JSON.stringify(newConnections, null, '  '))
     return {
@@ -24,7 +26,6 @@ const reducer = getReducer({
       console.log(`Setting index at ${action.index} to `, action.value)
       newConnections[action.index] = action.value
     }
-    //newConnections.push(action.value)
     localStorage.setItem('connections', JSON.stringify(newConnections))
     console.log('New connections: ', JSON.stringify(newConnections, null, '  '))
     return {
@@ -44,7 +45,7 @@ const reducer = getReducer({
     return {...state, connections: newConnections}
   },
   UPDATE_CONNECTION: (state, action) => {
-    if (typeof action.index != 'Integer') {
+    if (typeof action.index !== 'number') {
       action.index = parseInt(action.index, 10)
     }
     //It is possible to update whole connection when 'element' isn't specified
@@ -68,11 +69,21 @@ const reducer = getReducer({
   }
 })
 
+type Props = {
+  uriStateAndSetter: [string, (arg: string)=>void]
+}
 
-export default function SavedConnections(props) {
-  const [connections, setConnections] = useState([])
+type SavedConnectionsState = {
+  connections: Connection[]
+}
+
+
+export default function SavedConnections(props: Props) {
+  //const [connections, setConnections] = useState([])
   const [saveState, dispatcher] = useReducer(reducer, {})
   const [uri, setURIState] = props.uriStateAndSetter
+
+  // Loading saved connections
   useEffect(() => {
     const ac = new AbortController()
     let connections
@@ -90,6 +101,7 @@ export default function SavedConnections(props) {
     }
     return ac.abort()
   }, [])
+
   function setBeingCreated() {
     dispatcher({
       action: 'SET',
@@ -113,22 +125,10 @@ export default function SavedConnections(props) {
         uri: uri
       }
     })
-
-    /*  setSaveState({
-       action: 'TEST'
-     }) */
-    /*     setSaveState({
-          action: 'SET',
-          element: 'connections',
-          value: (() => {
-            const conns = Array.from(saveState.connections)
-            console.log('Conns: ', conns)
-            conns.push({name: saveState.name, uri: uri})
-            return conns
-          })()
-        }) */
   }
-  function updateName(e) {
+
+  function updateName(e: React.ChangeEvent) {
+    assertIsInputElement(e.target)
     dispatcher({
       action: 'SET',
       element: 'name',
@@ -136,26 +136,25 @@ export default function SavedConnections(props) {
     })
   }
 
-  function startEdit(e) {
+  // TODO Candidate for removal
+/*   function startEdit(e: Event) {
     console.log('Starting edit')
-    let index = e.target.getAttribute('index')
-    if (!index) {
-      console.log('Error: incorrect index ', index)
+    assertIsHTMLElement(e.target)
+    let indexString = e.target.getAttribute('data-index')
+    if (!indexString) {
+      console.log('Error: incorrect index ', indexString)
       return
-    }
-    index = parseInt(index, 10)
-    console.log('index ', index)
+    }    
+    const indexInt = parseInt(indexString, 10)
+    console.log('index ', indexInt)
     dispatcher({
       action: 'UPDATE_CONNECTION',
-      index: index,
+      index: indexInt,
       element: 'edit',
       value: true
     })
-  }
+  } */
 
-  function setURI(e) {
-    console.log('Attribute uri=', e.target.getAttribute('uri'))
-  }
   //Debug
   useEffect(() => {
     console.log('URI=', uri)
@@ -166,12 +165,13 @@ export default function SavedConnections(props) {
     console.log('Save state: ', saveState)
   }, [saveState])
 
+  // Cast state connections as Connection[] so that TypeScript doesn't complain
+  let connections = saveState.connections as Connection[]
+
   let counter = 0
 
   return (
-    <span
-    /* className='standard-container' */
-    >
+    <span>
       {
         (!saveState.connections/*  || saveState.connections.length == 0 */) &&
         <>There are no saved connections</>
@@ -180,7 +180,7 @@ export default function SavedConnections(props) {
         (saveState.connections && saveState.connections.length > 0) &&
         <>
           {
-            saveState.connections.map((connection, index) => (
+            (saveState.connections as Connection[]).map((connection, index) => (
               <SavedConnection
                 key = {index}
                 connection = {connection}

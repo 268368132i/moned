@@ -1,25 +1,42 @@
 import React, { useEffect } from 'react'
 import DropDown from './DropDown'
+import { assertIsInputElement } from '../lib/assertionsTargets'
+import type { Connection} from '../lib/types'
 
-export default function SavedConnection(props) {
+type Props = {
+  connection: Connection,
+  dispatcher: any,
+  index: number,
+  setURIState: any,
+}
+
+/**
+ * Component for displaying and controlling saved connections
+ * @param {*} props 
+ * @returns 
+ */
+export default function SavedConnection(props: Props) {
 
   const { connection } = props
   const { dispatcher } = props
   const { index } = props
   const setURIState = props.setURIState || (() => {})
-  const { editState } = props
+  //const { editState } = props
+
 
 
   //Debug 
-  useEffect(()=>{
+/*   useEffect(()=>{
     console.log('Editing: ', editState)
-  }, [editState])
-  function setURI(event) {
+  }, [editState]) */
+
+  function setURI() {
     setURIState(connection.uri)
   }
 
   //Updating 'name' element into 'newName' so that we can undo the renaming on 'Cancel'
-  function updateName(event) {
+  function updateName(event: React.ChangeEvent) {
+    assertIsInputElement(event.target)
     dispatcher({
       action: 'UPDATE_CONNECTION',
       index: index,
@@ -32,7 +49,8 @@ export default function SavedConnection(props) {
   }
 
   //Updating 'uri' element into 'newUri' so that we can undo the change on 'Cancel'
-  function updateUri(event) {
+  function updateUri(event: React.ChangeEvent) {
+    assertIsInputElement(event.target)
     dispatcher({
       action: 'UPDATE_CONNECTION',
       index: index,
@@ -45,7 +63,8 @@ export default function SavedConnection(props) {
   }
 
   //Update background color
-  function updateColor(event) {
+  function updateColor(event: React.ChangeEvent) {
+    assertIsInputElement(event.target)
     dispatcher({
       action: 'UPDATE_CONNECTION',
       index: index,
@@ -61,9 +80,9 @@ export default function SavedConnection(props) {
   function saveAndClose() {
     console.log('Saving and closing')
     const newConn = {
-      name: connection.edit.newName,
-      uri: connection.edit.newUri,
-      color: connection.edit.newColor
+      name: connection.edit?.newName,
+      uri: connection.edit?.newUri,
+      color: connection.edit?.newColor
     }
     console.log('New connection:', newConn)
     dispatcher({
@@ -72,7 +91,7 @@ export default function SavedConnection(props) {
       value: newConn
     })
   }
-  function deleteAndSave(event) {
+  function deleteAndSave() {
     console.log(`Deleting '${connection.name}' at index ${index}`)
     dispatcher({
       action: 'DELETE_AND_SAVE',
@@ -91,7 +110,7 @@ export default function SavedConnection(props) {
       }
     })
   }
-  function stopEdit(event) {
+  function stopEdit() {
     delete connection.edit
     dispatcher({
       action: 'UPDATE_CONNECTION',
@@ -115,7 +134,7 @@ export default function SavedConnection(props) {
         className='box-items'
       >
         <label
-          for='nameEdit'
+          htmlFor='nameEdit'
           className='box-item-label'
           >
             Name: 
@@ -133,7 +152,7 @@ export default function SavedConnection(props) {
         className='box-items'
       >
         <label
-          for='uriEdit'
+          htmlFor='uriEdit'
           className='box-item-label'
           >
             URI: 
@@ -150,8 +169,8 @@ export default function SavedConnection(props) {
           className='box-items'
         >
           <label
-          className='box-item-label'
-            for='colorPicker'
+            className='box-item-label'
+            htmlFor='colorPicker'
           >
             Color:
           </label>
@@ -190,7 +209,7 @@ export default function SavedConnection(props) {
         mainButton={
           <button
             onClick={setURI}
-            uri={connection.uri}
+            data-uri={connection.uri}
             style={{
               width: '100%',
               display: 'inline-block'
@@ -204,7 +223,7 @@ export default function SavedConnection(props) {
           className='menu bg-std v-container'
         >
           <button
-            index={index}
+            data-index={index}
             onClick={startEdit}
           >
             Edit

@@ -1,7 +1,6 @@
 import {apiURL} from './vars.js'
 
 export class DBConnection {
-
   static async connect(dbURL) {
     this.dbURL = dbURL
     const res = await fetch(apiURL + '/connection',{
