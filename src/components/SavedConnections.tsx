@@ -1,9 +1,10 @@
 import React, { useEffect, useReducer, useState } from 'react'
 import { getReducer } from '../lib/reducer'
 import SavedConnection from './SavedConnection'
-import type { Action } from '../lib/reducer'
+import SavedConnectionEditForm from './SavedConnectionEditForm'
+import { assertIsInputElement } from '../lib/assertionsTargets'
 import type { Connection } from '../lib/types'
-import { assertIsHTMLElement, assertIsInputElement } from '../lib/assertionsTargets'
+
 
 // Gets standard reducer + custom functions
 const reducer = getReducer({
@@ -18,18 +19,24 @@ const reducer = getReducer({
       inProcess: false
     }
   },
+  // This is the main action for updating and saving connections
   UPDATE_AND_SAVE: (state, action) => {
     console.log('Called UPDATE_AND_SAVE reducer', typeof state.connections)
     //Check if we got an array and create an empty one if we didn't
     const newConnections = state.connections?.length > 0 && Array.from(state.connections) || []
+    const newState = state
     if (typeof action.index === 'number') {
       console.log(`Setting index at ${action.index} to `, action.value)
       newConnections[action.index] = action.value
+    } else if (action.index === null) {
+      console.log('Index is null. Assuming new Connection')
+      newConnections.push(action.value)
     }
     localStorage.setItem('connections', JSON.stringify(newConnections))
+    delete newState.inProcess
     console.log('New connections: ', JSON.stringify(newConnections, null, '  '))
     return {
-      ...state,
+      ...newState,
       connections: newConnections,
       inProcess: false
     }
@@ -115,7 +122,7 @@ export default function SavedConnections(props: Props) {
       element: 'inProcess',
       value: false
     })
-  }
+  } 
   function saveAndClose() {
     console.log('Saving and closing')
     dispatcher({
@@ -154,6 +161,16 @@ export default function SavedConnections(props: Props) {
       value: true
     })
   } */
+
+  function saveNewConnection(conn: Connection){
+    //Disable edit mode otherwise a connection editor will open after saving
+    delete conn.edit
+    dispatcher({
+      action: 'UPDATE_AND_SAVE',
+      index: null,
+      value: conn
+    })
+  }
 
   //Debug
   useEffect(() => {
@@ -201,7 +218,18 @@ export default function SavedConnections(props: Props) {
       }
       {saveState.inProcess &&
         <div>
-          <input
+          <SavedConnectionEditForm
+            connection = {{
+              name: '',
+              uri: uri,
+              color: '#809090',
+              edit: true
+            }}
+            index = {null}
+            saveAction={saveNewConnection}
+            cancelAction={setNotBeingCreated}
+          />
+{/*           <input
             type='text'
             onChange={updateName}
             value={saveState.name}
@@ -216,7 +244,7 @@ export default function SavedConnections(props: Props) {
             onClick={setNotBeingCreated}
           >
             Cancel
-          </button>
+          </button> */}
         </div>
       }
     </span>

@@ -27,7 +27,7 @@
   },
   "main": "public/electron.js",
   "scripts": {
-    "start": "concurrently -k \"nodemon --watch public/server.mjs public/server.mjs\" \"react-app-rewired start\" ",
+    "start": "concurrently -k \"nodemon --watch public/server.mjs --watch public/serverlib.mjs public/server.mjs\" \"react-app-rewired start\" ",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject",

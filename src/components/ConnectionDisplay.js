@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { DBConnection } from '../lib/DBConnection'
+import { HTTPDBConnection } from '../lib/HTTPDBConnection'
 import DBDisplay from './DBDisplay'
 
 
@@ -21,7 +21,7 @@ export default function ConnectionDisplay(props) {
             return
           }
           try {
-          setDBs(await DBConnection.getConnectionDBs(conn.key))
+          setDBs(await HTTPDBConnection.getConnectionDBs(conn.key))
           } catch (err) {
             console.log(`Error getting databases: ${String(err)}`)
           }

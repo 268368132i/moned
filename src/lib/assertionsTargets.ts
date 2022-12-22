@@ -2,8 +2,8 @@
  * This file contains assertion function for TypeScript
  */
 
-export function assertIsInputElement(eventTarget: EventTarget | null): asserts eventTarget is HTMLInputElement {
-  if (!eventTarget || !(eventTarget instanceof HTMLInputElement)) {
+export function assertIsInputElement(eventTarget: EventTarget | null): asserts eventTarget is HTMLInputElement | HTMLTextAreaElement {
+  if (!eventTarget || !(eventTarget instanceof HTMLInputElement || eventTarget instanceof HTMLTextAreaElement)) {
     throw new Error('Not an Input Element')
   }
 }

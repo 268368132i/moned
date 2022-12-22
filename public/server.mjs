@@ -7,13 +7,16 @@ const SocketServer  = require('socket.io').Server */
 
 import express from 'express'
 import { MongoClient, Db, ObjectId } from 'mongodb'
+import { SocketAddress } from 'net'
 //import { uuid } from 'uuid'
 import { Server } from 'socket.io'
+import {connect} from './serverlib.mjs'
 
 
 let app = express()
 
 const connections = new Array()
+const ncns = {}
 const actions = {
   find: async (connections, query) => {
     let res
@@ -167,6 +170,22 @@ app.post('/command', (req, res) => {
 
 })
 
+function addConnection(client, name){
+  for ([key, val] of Object.entries(ncns)){
+    if(name === key) {
+      throw new Error('Already connected with this name')
+    }
+  }
+  ncns[name] = client
+}
+
+async function removeAndDisconnect(name) {
+  if(name in ncns) {
+    ncns[name].close()
+    delete ncns[name]
+  }
+}
+
 console.log('server is starting...')
 
 let httpServer = app.listen(3001)
@@ -177,8 +196,28 @@ socketIo.on('connection', function (socket) {
   socket.on('test message', (socket) => {
     console.log('Socket event TEST arrived: ', socket)
   })
+  socket.on('dbconnect', async (data)=>{
+    console.log('Connecting with data ', data)
+    try {
+      if ('uri' in data === false) {
+        throw new Error('Incorrect payload: \'uri\' expected.')
+      }
+      if('name' in data === false) {
+        throw new Error('Incorrect payload: \'name\' expected')
+      }
+      const client = await connect(data.uri)
+      ncns[data.name] = client
+      socket.emit(`${data.name}-status`,{connected: true})
+    } catch (err) {
+      console.log('Error connecting: ', err)
+      socket.emit('error', `Error for connect: ${String(err)}`)
+    }
+  })
+  socket.onAny((event, ...args) => {
+    console.log(`Event: ${event}, args: `, args)
+  })
   //Whenever someone disconnects this piece of code executed
-  socket.on('disconnect', function () {
+  socket.on('dbdisconnect', function () {
     console.log('A user disconnected');
   });
 

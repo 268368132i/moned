@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { DBConnection } from '../lib/DBConnection'
+import { HTTPDBConnection } from '../lib/HTTPDBConnection'
 import PathContext from './PathContext'
 
 export default function DBDisplay(props) {
@@ -18,8 +18,8 @@ export default function DBDisplay(props) {
             return
           }
           try {
-            const ncoll = await DBConnection.getCollections(db.connection, db.name)
-            setColls(await DBConnection.getCollections(db.connection, db.name))
+            const ncoll = await HTTPDBConnection.getCollections(db.connection, db.name)
+            setColls(await HTTPDBConnection.getCollections(db.connection, db.name))
           } catch (err) {
             console.log('Error getting collections: ', err)
           }
