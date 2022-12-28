@@ -3,45 +3,27 @@ import logo from './logo.svg'
 import CodeEditor from './components/CodeEditor'
 import ConnectBar from './components/ConnectBar'
 import { HTTPDBConnection } from './lib/HTTPDBConnection'
-import { useEffect, useReducer, useState } from 'react'
+import { useReducer, useState } from 'react'
 import DBrowser from './components/DBrowser'
-import PathContextimport, { PathProvider, reducer } from './components/PathContext'
+import { PathProvider, reducer } from './components/PathContext'
 import PathBar from './components/PathBar'
 import ActionChooser from './components/ActionChooser'
 import { getReducer } from './lib/reducer'
 import CodeDisplay from './components/CodeDisplay'
 import ModalDialog from './components/ModalDialog'
-import { io } from 'socket.io-client'
-import React, { createContext } from 'react'
+import React from 'react'
 import { SocketContext } from './components/SocketContext'
+import globalSocket from './CommunicationStore'
 const resultReducer = getReducer()
 
-let socket
 function App() {
-
   const [conns, setConns] = useState([])
   const code = useState('')
   const result = useReducer(resultReducer, { result: '' })
 
-
-
-  /*   useEffect(() => {
-      console.log('Result has changed: ', result)
-    }, [result[0]])
-    useEffect(() => {
-      socket = io("ws://localhost:3000")
-  
-    }, [])
-    function testWS(e) {
-      console.log('WS connection: ', socket)
-      // send a message to the server
-      socket.emit('test message', {message: 'test'})
-    } */
-
-
-
   return (
     <>
+      <span>APP span</span>
       <div
         className="App"
         style={{
@@ -53,12 +35,12 @@ function App() {
         }}
       >
         <ModalDialog
-          style={{}}
+          style={{ }}
         />
         <PathProvider
           value={useReducer(reducer, { path: [] })}
         >
-          <SocketContext.Provider value={useState(io('ws://localhost:3000'))}>
+          <SocketContext.Provider value={globalSocket}>
             <ConnectBar
               handleConnect={async (url) => {
                 setConns(await HTTPDBConnection.connect(url))
