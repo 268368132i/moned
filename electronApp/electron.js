@@ -1,16 +1,19 @@
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
+
 import('../backend/server.mjs') // run node js server
 const isDev = process.env.NODE_ENV === 'dev'
 console.log(`isDev:${isDev}`)
+
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
     width: 1280,
     height: 720,
     webPreferences: {
-      nodeIntegration: true,
+      preload: path.join(__dirname, "preload.js") // use a preload script
     },
+
   });
 
   if (isDev) {
