@@ -5,6 +5,7 @@ const ObjectId    = require('mongodb').ObjectId
 const uuid        = require('uuid')
 const SocketServer  = require('socket.io').Server */
 
+import http from 'http';
 import express from 'express'
 import { MongoClient, Db, ObjectId } from 'mongodb'
 import { SocketAddress } from 'net'
@@ -12,8 +13,10 @@ import { SocketAddress } from 'net'
 import { Server } from 'socket.io'
 import {connect} from './serverlib.mjs'
 
+const httpServer = http.createServer();
+const app = express(httpServer)
 
-let app = express()
+console.log('server is starting...')
 
 const connections = new Array()
 const ncns = {}
@@ -186,13 +189,10 @@ async function removeAndDisconnect(name) {
   }
 }
 
-console.log('server is starting...')
-
-let httpServer = app.listen(3001)
 const socketIo = new Server(httpServer)
 //Whenever someone connects this gets executed
 socketIo.on('connection', function (socket) {
-  console.log('A user connected');
+  console.log(`A user connected ${socket.id}`);
   socket.on('test message', (socket) => {
     console.log('Socket event TEST arrived: ', socket)
   })
@@ -216,10 +216,19 @@ socketIo.on('connection', function (socket) {
   socket.onAny((event, ...args) => {
     console.log(`Event: ${event}, args: `, args)
   })
+  socket.on('disconnect', () => {
+    console.log(`user disconnected ${socket.id}`);
+  })
   //Whenever someone disconnects this piece of code executed
   socket.on('dbdisconnect', function () {
     console.log('A user disconnected');
   });
 
+})
+
+const HOST = '127.0.0.1';
+const PORT = 3001;
+httpServer.listen(PORT, HOST, () => {
+  console.log(`api server is listening ${HOST} ${PORT}`)
 })
 

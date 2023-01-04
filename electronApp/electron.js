@@ -1,29 +1,41 @@
 const path = require('path');
-const express = require('./server.js');
 const { app, BrowserWindow } = require('electron');
-const isDev = require('electron-is-dev');
 
-function createWindow() {
+import('../backend/server.mjs') // run node js server
+const isDev = process.env.NODE_ENV === 'dev'
+console.log(`isDev:${isDev}`)
+
+async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
     width: 1280,
     height: 720,
     webPreferences: {
-      nodeIntegration: true,
+      preload: path.join(__dirname, "preload.js") // use a preload script
     },
+
   });
 
-  // and load the index.html of the app.
-  // win.loadFile("index.html");
-  win.loadURL(
-    isDev
-      ? 'http://localhost:3000'
-      : `file://${path.join(__dirname, '../build/index.html')}`
-  );
+  if (isDev) {
+    const devServerUri = 'http://localhost:3000'
+    console.log(`load devServer uri:${devServerUri}`)
+    await win.loadURL(devServerUri);
+  } else {
+    const fn = path.resolve(__dirname, '..', 'build', 'index.html')
+    console.log(`open file index ${fn}`)
+    await win.loadFile(fn)
+  }
+
   // Open the DevTools.
   if (isDev) {
     win.webContents.openDevTools({ mode: 'detach' });
   }
+  
+  let cnt =0;
+  // setInterval(() => {
+  //   cnt++;
+  //   win.webContents.send('data', { cnt });
+  // }, 1000)
 }
 
 // This method will be called when Electron has finished
