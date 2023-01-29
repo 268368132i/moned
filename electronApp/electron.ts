@@ -1,9 +1,15 @@
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
 
-import('../backend/server.mjs') // run node js server
-const isDev = process.env.NODE_ENV === 'dev'
+import('../backend/socketio.mjs') // run node js server
+const isDev = process.env.NODE_ENV === 'dev';
 console.log(`isDev:${isDev}`)
+
+if (isDev) {
+  import('../backend/socketio.mjs') // socket.io listeners
+} else {
+  // import('../backend/ipc.mjs') // ipc listener
+}
 
 async function createWindow() {
   // Create the browser window.
@@ -21,7 +27,7 @@ async function createWindow() {
     console.log(`load devServer uri:${devServerUri}`)
     await win.loadURL(devServerUri);
   } else {
-    const fn = path.resolve(__dirname, '..', 'build', 'index.html')
+    const fn = path.resolve(__dirname, '..', '..', 'build', 'index.html')
     console.log(`open file index ${fn}`)
     await win.loadFile(fn)
   }

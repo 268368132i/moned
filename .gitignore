@@ -8,8 +8,10 @@
 # testing
 /coverage
 
-# production
+# react compiled app
 /build
+# compiled backend files
+/dist
 
 # misc
 .DS_Store

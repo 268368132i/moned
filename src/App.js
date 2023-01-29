@@ -13,8 +13,10 @@ import CodeDisplay from './components/CodeDisplay'
 import ModalDialog from './components/ModalDialog'
 import React from 'react'
 import { SocketContext } from './components/SocketContext'
-import globalSocket from './CommunicationStore'
+import CommunicationStore from './CommunicationStore'
 const resultReducer = getReducer()
+
+const communicationStore = new CommunicationStore();
 
 function App() {
   const [conns, setConns] = useState([])
@@ -40,7 +42,7 @@ function App() {
         <PathProvider
           value={useReducer(reducer, { path: [] })}
         >
-          <SocketContext.Provider value={globalSocket}>
+          <SocketContext.Provider value={communicationStore}>
             <ConnectBar
               handleConnect={async (url) => {
                 setConns(await HTTPDBConnection.connect(url))

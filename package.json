@@ -2,15 +2,16 @@
   "name": "moned",
   "version": "0.1.0",
   "private": true,
-  "main": "electronApp/electron.js",
+  "main": "dist/electronApp/electron.js",
   "scripts": {
     "devSrv": "npx nodemon backend/server.mjs",
     "devReact": "react-scripts start",
     "dev": "concurrently -k \"npm run devSrv\" \"npm run devReact\" ",
-    "build": "react-scripts build",
+    "buildElectron": "react-scripts build && tsc",
     "test": "react-scripts test",
-    "devElectron": "concurrently -k \"BROWSER=none npm run devReact\" \"npx wait-on tcp:3000 && NODE_ENV=dev npx electron .\"",
-    "start": "NODE_ENV=prod npx electron ."
+    "devElectron": "concurrently -k \"BROWSER=none npm run devReact\" \"npx wait-on tcp:3000 && NODE_ENV=dev npx electron -r ts-node/register/transpile-only electronApp/electron.ts\"",
+    "start": "NODE_ENV=electron npx electron .",
+    "startDocker": "NODE_ENV=docker ts-node backend/socketio.mts"
   },
   "eslintConfig": {
     "extends": [
@@ -54,6 +55,7 @@
     "react-scripts": "^5.0.1",
     "react-simple-code-editor": "^0.13.1",
     "socket.io-client": "^4.5.4",
+    "ts-node": "^10.9.1",
     "typescript": "^4.9.4",
     "uuid": "^9.0.0",
     "wait-on": "^6.0.1",
