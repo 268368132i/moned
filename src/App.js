@@ -1,5 +1,3 @@
-import logo from './logo.svg'
-// import './App.css'
 import CodeEditor from './components/CodeEditor'
 import ConnectBar from './components/ConnectBar'
 import { HTTPDBConnection } from './lib/HTTPDBConnection'
@@ -16,7 +14,15 @@ import { SocketContext } from './components/SocketContext'
 import CommunicationStore from './CommunicationStore'
 const resultReducer = getReducer()
 
+console.log('App start')
+if (document.communicationStore) {
+  // triggered on hotmodule reload
+  document.communicationStore.destroy();
+  delete document.communicationStore;
+}
 const communicationStore = new CommunicationStore();
+// for debug from browser console
+document.communicationStore = communicationStore;
 
 function App() {
   const [conns, setConns] = useState([])

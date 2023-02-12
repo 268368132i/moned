@@ -3,7 +3,8 @@
         "outDir": "dist",
         "sourceMap": true,
         "rootDirs": ["backend/", "electronApp/"],
-        "typeRoots": ["./node_modules/@types", "./typings"]
+        "typeRoots": ["./node_modules/@types", "./typings"],
+        "module": "nodenext",
     },
     "include": ["./backend", "./electronApp"],
     "exclude": ["node_modules", "bin", "**/__mocks__*", "**/*.spec.**", "test", "assets"]

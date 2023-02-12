@@ -9,8 +9,9 @@ const socketIo = new Server(httpServer)
 // Whenever someone connects this gets executed
 socketIo.on('connection', function (socket) {
   console.log(`A user connected ${socket.id}`);
-  socket.on('test message', (socket) => {
-    console.log('Socket event TEST arrived: ', socket)
+  socket.on('message', (data, cb) => {
+    console.log('Socket message: ', data);
+    cb(null, { answer: '123' })
   })
   socket.on('disconnect', () => {
     console.log(`user disconnected ${socket.id}`);
