@@ -1,17 +1,18 @@
 const path = require('path');
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const esm = require('esm')(module);
 
-import('../backend/socketio.mjs') // run node js server
 const isDev = process.env.NODE_ENV === 'dev';
 console.log(`isDev:${isDev}`)
-
-if (isDev) {
-  import('../backend/socketio.mjs') // socket.io listeners
-} else {
-  // import('../backend/ipc.mjs') // ipc listener
-}
+const { initializeIpc } = esm("../backend/ipc.mts")
 
 async function createWindow() {
+  // if (isDev) {
+    // await import('../backend/socketio.mjs') // socket.io listeners
+  // }
+  //const { initializeIpc } = await import('../backend/ipc.mts', { assert: { type: "module" } }) // ipc listener
+  await initializeIpc(ipcMain)
+
   // Create the browser window.
   const win = new BrowserWindow({
     width: 1280,

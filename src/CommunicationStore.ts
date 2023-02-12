@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client'
-import { threadId } from 'worker_threads';
-import type { BackendMessage, ElectronProp } from '../types/Communication';
+import { v4 as uuid4 } from 'uuid'
+import type { BackendMessage, ElectronProp, FrontendMessage } from '../types/Communication';
 // import { ipcRenderer } from 'electron';
 // ipcRenderer.on('data', function (event,store) {
 //     console.log(`data`, store);
@@ -13,12 +13,16 @@ const win = window as (typeof window & { electron?: ElectronProp } )
 class CommunicationStore {
     type: 'IPC' | 'Socket.io';
     socket?: Socket;
-    ackNum: number = 0;
-    ipcAckHandlers: { [index: number]: undefined | {
+    ipcAckHandlers: { [index: string]: undefined | {
         event: string;
         resolve: (data: unknown) => void;
         reject: (err: Error) => void;
     } } = {};
+
+    socketAckHandlers: { [index:string]: undefined | {
+        reject: (err: Error) => void;
+        sendTime: number;
+    }}
 
     constructor () {
         if (win.electron) {
@@ -34,12 +38,31 @@ class CommunicationStore {
     }
 
     initSocketIo() {
-        this.socket = io('ws://localhost:3000')
+        this.socket = io('ws://localhost:3000');
+        this.socket.on('connect', async () => {
+            try {
+                await this.emit('init', {})
+            } catch (err) {
+                console.error('error on init socket.io!');
+                this.destroy();
+                this.initSocketIo();
+            }
+        })
+        this.socket.on('disconnect', (reason: string) => {
+            console.log('socket.io disconnected');
+            for (const key in this.socketAckHandlers) {
+                this.socketAckHandlers?.[key]?.reject(new Error('disconnected'))
+                delete this.socketAckHandlers?.[key];
+            }
+        })
+        this.socketAckHandlers = {};
     }
 
-    onIpcMessage(incomingMessage: BackendMessage) {
-        const { err, data, ack } = incomingMessage;
-        const ackHandler = this.ipcAckHandlers[ack];
+    onIpcMessage(_event, incomingMessage: BackendMessage) {
+        console.log('onIpcMessage',_event, incomingMessage)
+        const { err, data, id } = incomingMessage;
+        const ackHandler = this.ipcAckHandlers[id];
+        delete this.ipcAckHandlers[id];
         if (!ackHandler) {
             return;
         }
@@ -52,27 +75,41 @@ class CommunicationStore {
         ackHandler.resolve(data);
     }
 
-    initIpc() {
+    async initIpc() {
         if (!win.electron) return;
         win.electron.receive(this.onIpcMessage.bind(this))
+        
+        try {
+            await this.emit('init', {})
+        } catch (err) {
+            console.error('error on init IPC!', err);
+            // this is unexpected situation
+        }
     }
 
     async emit(event: string, data: unknown): Promise<unknown> {
         if (this.type === 'IPC') {
             return new Promise((resolve, reject) => {
                 if (!win.electron) return;
-                this.ackNum++;
-                this.ipcAckHandlers[this.ackNum] = { event, resolve, reject }
-                win.electron.send({
+                const id = uuid4();
+                this.ipcAckHandlers[id] = { event, resolve, reject };
+                const message:FrontendMessage = {
                     event,
-                    ack: this.ackNum,
+                    id,
                     data
-                })
+                }
+                win.electron.send(message)
             })
         } else if (this.type === 'Socket.io') {
             return new Promise((resolve, reject) => {
-                // TODO register reject handler (call it on disconnect)
+                if (!this.socket?.connected) {
+                    reject(new Error('socket.io is not connected'));
+                    return;
+                }
+                const key = uuid4();
+                this.socketAckHandlers[key] = { reject, sendTime: (new Date()).getTime()}
                 this.socket?.emit('message', { event, data }, (err, incomingData) => {
+                    delete this.socketAckHandlers[key];
                     if (err) {
                         reject(err);
                         return;
