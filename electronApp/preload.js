@@ -2,16 +2,18 @@ const {
     contextBridge,
     ipcRenderer
 } = require("electron");
-import type {ElectronProp} from '../types/Communication'
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-const electronProp: ElectronProp = {
+const electronProp = {
     send: (data) => {
         ipcRenderer.send('toMain', data);
     },
-    receive: (func) => {
+    receiveOn: (func) => {
         ipcRenderer.on('fromMain', func);
+    },
+    receiveOffAll: () => {
+        ipcRenderer.removeAllListeners('fromMain');
     }
 };
 contextBridge.exposeInMainWorld("electron", electronProp);

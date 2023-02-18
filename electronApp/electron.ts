@@ -1,10 +1,9 @@
-const path = require('path');
-const { app, BrowserWindow, ipcMain } = require('electron');
-const esm = require('esm')(module);
+import path from 'path';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
 const isDev = process.env.NODE_ENV === 'dev';
 console.log(`isDev:${isDev}`)
-const { initializeIpc } = esm("../backend/ipc.mts")
+import { initializeIpc } from '../backend/ipc'
 
 async function createWindow() {
   // if (isDev) {

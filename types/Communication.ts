@@ -1,6 +1,11 @@
+import type { IpcRendererEvent } from "electron";
+
+export type IncomingIpcHandler = (event: IpcRendererEvent, data: BackendMessage) => void
+
 export type ElectronProp = {
-    send: (data: unknown) => void
-    receive: (handler: (event: unknown, data: BackendMessage) => void) => void
+    send: (data: unknown) => void;
+    receiveOn: (handler: IncomingIpcHandler) => void;
+    receiveOffAll: () => void;
 }
 
 export type BackendMessage = {

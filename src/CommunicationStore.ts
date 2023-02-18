@@ -71,13 +71,15 @@ class CommunicationStore {
             ackHandler.reject(new Error(err))
             return;
         }
-
+       
         ackHandler.resolve(data);
     }
 
     async initIpc() {
         if (!win.electron) return;
-        win.electron.receive(this.onIpcMessage.bind(this))
+
+        const handler: typeof this.onIpcMessage = this.onIpcMessage.bind(this);
+        win.electron.receiveOn(handler)
         
         try {
             await this.emit('init', {})
@@ -130,6 +132,10 @@ class CommunicationStore {
         if (this.type === 'Socket.io') {
             this.socket?.disconnect();
             this.socket = undefined;
+        }
+
+        if(this.type === 'IPC' && win.electron) {
+            win.electron.receiveOffAll()
         }
     }
 }

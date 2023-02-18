@@ -1,4 +1,4 @@
-import type { FrontendMessage, BackendMessage } from "../types/Communication.js";
+import type { FrontendMessage, BackendMessage } from "../types/Communication";
 import type { IpcMainEvent } from 'electron'
 
 export async function initializeIpc(ipcMain) {
