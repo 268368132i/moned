@@ -1,13 +1,43 @@
-body {
+#root, html, body {
+  height: 100%;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+}
+#root {
+  display: flex;
+  flex-direction: column;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.fullHeight {
+  height: 100%;
+  margin: 0;
+}
+
+.flexVertical {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.flexGrow {
+  flex-grow: 1;
+}
+
+.editor {
+  font-family: '"Fira code", "Fira Mono", monospace';
+  font-size: 12;
+}
+.contentScroll {
+  overflow: auto;
+}
+
+.scrolled-body-wrapper {
+  position: relative;  /* <------------------------- required */
+  /* background: silver; */
+  flex: 1;
+}
+
+.scrolled-body {
+  position: absolute;  /* <------------------------- required */
+  left: 0; top: 0; right: 0; bottom: 0;  /* <------- required */
+  overflow-y: auto;  /* <--------------------------- required */
 }
