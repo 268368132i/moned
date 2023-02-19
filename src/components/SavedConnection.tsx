@@ -6,7 +6,7 @@ import type { Connection} from '../lib/types'
 import SavedConnectionEditForm from './SavedConnectionEditForm'
 import { WSDBConnection } from '../lib/WSDBConnection'
 import { SocketContext } from './SocketContext'
-import { Socket } from 'socket.io-client'
+// import { Socket } from 'socket.io-client'
 
 type Props = {
   connection: Connection,
